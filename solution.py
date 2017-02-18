@@ -25,7 +25,7 @@ diagonal_units = [[rows[i]+cols[i] for i in range(len(rows))],
                  [rows[i]+cols[len(rows)-1-i] for i in range(len(rows))]]
 
 unitlist = row_units + column_units + square_units + diagonal_units
-unitlist_without_diagonal = row_units + column_units + square_units + diagonal_units
+unitlist_without_diagonal = row_units + column_units + square_units 
 
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
