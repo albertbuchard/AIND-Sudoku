@@ -25,7 +25,7 @@ diagonal_units = [[rows[i]+cols[i] for i in range(len(rows))],
                  [rows[i]+cols[len(rows)-1-i] for i in range(len(rows))]]
 
 unitlist = row_units + column_units + square_units + diagonal_units
-unitlist_without_diagonal = row_units + column_units + square_units + diagonal_units
+unitlist_without_diagonal = row_units + column_units + square_units 
 
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
@@ -174,28 +174,6 @@ def only_choice(values):
                 values[dplaces[0]] = digit
     return values
 
-def reduce_puzzle(values):
-    """
-    Iterate eliminate() and only_choice(). If at some point, there is a box with no available values, return False.
-    If the sudoku is solved, return the sudoku.
-    If after an iteration of both functions, the sudoku remains the same, return the sudoku.
-    Input: A sudoku in dictionary form.
-    Output: The resulting sudoku in dictionary form.
-    """
-    solved_values = [box for box in values.keys() if len(values[box]) == 1]
-    stalled = False
-    while not stalled:
-        solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
-        values = eliminate(values)
-        values = only_choice(values)
-        solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
-        stalled = solved_values_before == solved_values_after
-        if len([box for box in values.keys() if len(values[box]) == 0]):
-            return False
-    return values
-
-
- 
 def search(values):
     "Using depth-first search and propagation, try all possible values."
     # First, reduce the puzzle using the previous function
@@ -213,16 +191,50 @@ def search(values):
         attempt = search(new_sudoku)
         if attempt:
             return attempt
+        
+def reduce_puzzle(values):
+    """
+    Iterate eliminate(), only_choice(), and naked_twins(). 
+    
+    If at some point, there is a box with no available values, return False.
+    If the sudoku is solved, return the sudoku.
+    If after an iteration of both functions, the sudoku remains the same, return the sudoku.
+    Input: A sudoku in dictionary form.
+    Output: The resulting sudoku in dictionary form.
+    """
+    solved_values = [box for box in values.keys() if len(values[box]) == 1]
+    stalled = False
+    while not stalled:
+        solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
+        values = eliminate(values)
+        values = only_choice(values)
+        values = naked_twins(values)
+        solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
+        stalled = solved_values_before == solved_values_after
+        if len([box for box in values.keys() if len(values[box]) == 0]):
+            return False
+    return values
 
 def solve(grid):
     """
     Find the solution to a Sudoku grid.
     Args:
         grid(string): a string representing a sudoku grid.
-            Example: '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+            Example:
+            '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
-    """
+    """ 
+    
+    # We suppose it is a diagonal sudoku (although it is unclear since the naked twins are not passing the test on diagonals)
+    
+    # Get dict values from grid
+    values = grid_values(grid)
+    
+    # Start looping until solved
+    return(search(values))
+        
+
 
 if __name__ == '__main__':
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
