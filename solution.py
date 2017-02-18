@@ -19,13 +19,13 @@ column_units = [cross(rows, c) for c in cols]
 square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
 
 """
-    Here are defined the two new diagonal units required 
+    Here are defined the two new diagonal units required
 """
 diagonal_units = [[rows[i]+cols[i] for i in range(len(rows))],
                  [rows[i]+cols[len(rows)-1-i] for i in range(len(rows))]]
 
 unitlist = row_units + column_units + square_units + diagonal_units
-unitlist_without_diagonal = row_units + column_units + square_units 
+unitlist_without_diagonal = row_units + column_units + square_units
 
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s],[]))-set([s])) for s in boxes)
@@ -47,7 +47,7 @@ def assign_value(values, box, value):
 def find_twins (values):
     """
     From a dictionary return a dictionary of value:[twins] pair for twins on any size of values.
-    
+
     Args:
         values(dict): a dictionary of the form {'box_name': '123456789', ...}
 
@@ -55,10 +55,10 @@ def find_twins (values):
         A dictionary of the form {'replicated_value' : [key_twin1, key_twin2, key_twin3...]}
     """
     twin_dictionary = {}
-    
+
     # Get an array of all keys
     left_keys = [key for key in values]
-    
+
     # Start iteration for search
     while(len(left_keys)):
         # Pop one item out of the non processed keys array
@@ -71,10 +71,10 @@ def find_twins (values):
         if len(twin_keys) > 0:
             # update the twin dictionary
             twin_dictionary[values[key]] = [t[1] for t in twin_keys] + [key]
-            
-            # delete twin_keys from the key list to process 
+
+            # delete twin_keys from the key list to process
             left_keys = [k for k in left_keys if k not in twin_dictionary[values[key]]]
-            
+
     return(twin_dictionary)
 
 def naked_twins(values):
@@ -90,32 +90,32 @@ def naked_twins(values):
     for unit in unitlist_without_diagonal:
         # Look for twins in the unit {value: [key_twin1, ..., key_twinN], ...}
         twins = find_twins(dict([(k, values[k]) for k in unit]))
-        
+
         # Make sure there are no twins with lenght 1 values in the unit
         if any([len(k) == 1 for k in twins]):
             return False
-        
+
         # Look only for valid twins with number of twin equal to number of possible value
         valid_twins = [[k for k in twins[t] if len(t) == len(twins[t])] for t in twins]
-        
+
         # Get rid of empty arrays
         valid_twins = [x for x in valid_twins if x]
-            
+
         for twin_group in valid_twins:
             # Get the other boxes of the unit
             non_twin = [k for k in unit if k not in twin_group]
-            
-            # Get values to eliminate 
-            to_eliminate = values[twin_group[0]] 
-            
+
+            # Get values to eliminate
+            to_eliminate = values[twin_group[0]]
+
             # Eliminate the naked twins as possibilities for their peers
             for k in non_twin:
-                regex = r"[" + re.escape(to_eliminate) + r"]" 
-                values[k] = re.sub(regex, "",values[k]) 
-                
+                regex = r"[" + re.escape(to_eliminate) + r"]"
+                values[k] = re.sub(regex, "",values[k])
+
     return values
-    
-    
+
+
 def display(values):
     """
     Display the values as a 2-D grid.
@@ -147,7 +147,7 @@ def grid_values(grid):
             chars.append(digits)
     assert len(chars) == 81
     return dict(zip(boxes, chars))
-    
+
 def eliminate(values):
     """
     Go through all the boxes, and whenever there is a box with a value, eliminate this value from the values of all its peers.
@@ -180,22 +180,22 @@ def search(values):
     values = reduce_puzzle(values)
     if values is False:
         return False ## Failed earlier
-    if all(len(values[s]) == 1 for s in boxes): 
+    if all(len(values[s]) == 1 for s in boxes):
         return values ## Solved!
     # Choose one of the unfilled squares with the fewest possibilities
     n,s = min((len(values[s]), s) for s in boxes if len(values[s]) > 1)
-    # Now use recurrence to solve each one of the resulting sudokus, and 
+    # Now use recurrence to solve each one of the resulting sudokus, and
     for value in values[s]:
         new_sudoku = values.copy()
         new_sudoku[s] = value
         attempt = search(new_sudoku)
         if attempt:
             return attempt
-        
+
 def reduce_puzzle(values):
     """
-    Iterate eliminate(), only_choice(), and naked_twins(). 
-    
+    Iterate eliminate(), only_choice(), and naked_twins().
+
     If at some point, there is a box with no available values, return False.
     If the sudoku is solved, return the sudoku.
     If after an iteration of both functions, the sudoku remains the same, return the sudoku.
@@ -207,8 +207,8 @@ def reduce_puzzle(values):
     while not stalled:
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
         values = eliminate(values)
-        values = only_choice(values)
         values = naked_twins(values)
+        values = only_choice(values)
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         stalled = solved_values_before == solved_values_after
         if len([box for box in values.keys() if len(values[box]) == 0]):
@@ -224,16 +224,16 @@ def solve(grid):
             '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     Returns:
         The dictionary representation of the final sudoku grid. False if no solution exists.
-    """ 
-    
+    """
+
     # We suppose it is a diagonal sudoku (although it is unclear since the naked twins are not passing the test on diagonals)
-    
+
     # Get dict values from grid
     values = grid_values(grid)
-    
+
     # Start looping until solved
     return(search(values))
-        
+
 
 
 if __name__ == '__main__':
